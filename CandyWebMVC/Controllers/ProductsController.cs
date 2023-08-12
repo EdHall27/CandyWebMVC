@@ -62,7 +62,7 @@ namespace CandyWebMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                string imagePath = null;
+                string imagePath ="";
 
                 if (imageViewModel.ImageFile != null)
                 {

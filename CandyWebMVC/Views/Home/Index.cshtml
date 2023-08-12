@@ -1,8 +1,42 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model List<Products>
+
+@{
+    ViewData["Title"] = "Página Inicial";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    .custom-card {
+        height: 200px; /* Defina a altura desejada para os cards */
+    }
+
+    .card-img-top {
+        height: 200px; /* Defina a altura desejada para as imagens */
+        object-fit: cover; /* Garante que a imagem cubra todo o espaço da caixa de imagem */
+    }
+</style>
+
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="row">
+            @foreach (var product in Model)
+            {
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm ">
+                        <img src="@Url.Content(product.ImagePath)" class="card-img-top" alt="@product.Name">
+                        <div class="card-body">
+                            <h5 class="card-title">@product.Name</h5>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">Detalhes</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">Comprar</button>
+                                </div>
+                                <small class="text-muted">Preço: R$ @product.Price</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 </div>
