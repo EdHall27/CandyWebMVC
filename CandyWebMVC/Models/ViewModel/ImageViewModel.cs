@@ -14,6 +14,9 @@ namespace CandyWebMVC.Models.ViewModel
         public double Price { get; set; }
 
         [Required(ErrorMessage = "{0} required")]
+        public string Description { get; set; }
+
+        [Required(ErrorMessage = "{0} required")]
         public IFormFile ImageFile { get; set; }
     }
 }

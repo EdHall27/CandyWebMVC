@@ -75,6 +75,7 @@ namespace CandyWebMVC.Controllers
                 {
                     Name = imageViewModel.Name,
                     Price = imageViewModel.Price,
+                    Description = imageViewModel.Description,
                     ImagePath = imagePath
                 };
 

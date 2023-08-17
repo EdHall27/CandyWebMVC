@@ -16,6 +16,9 @@ namespace CandyWebMVC.Models
         public double Price { get; set; }
 
         [Required(ErrorMessage = "{0} required")]
+        public string Description { get; set; }
+
+        [Required(ErrorMessage = "{0} required")]
         public string ImagePath { get; set; }
 
     }

@@ -24,6 +24,10 @@ namespace CandyWebMVC.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("longtext");
