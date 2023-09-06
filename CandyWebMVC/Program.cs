@@ -1,16 +1,20 @@
 using CandyWebMVC.Data;
+using CandyWebMVC.Helper;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<CartHelper>();
+builder.Services.AddSession();
 
 builder.Services.AddDbContext<Context>
     (options => options.UseMySql("server=localhost;initial catalog=Product;uid=root;pwd=1234567",
     Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.32-mysql")));
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

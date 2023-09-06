@@ -9,6 +9,16 @@ namespace CandyWebMVC.Data
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<User>().HasMany(u => u.UserAdress).WithOne(e => e.User).HasForeignKey(e => e.Userid);
+        }
+
+
         public DbSet<Products> Products { get; set; }
+        public DbSet<Cart> CartItems { get; set; }
+        public DbSet<User> User { get; set; }
     }
 }

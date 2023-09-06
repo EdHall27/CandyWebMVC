@@ -1,0 +1,61 @@
+﻿@model List<Cart>
+
+<h1>Shopping Cart</h1>
+
+<div id="cart">
+    @foreach (var item in Model)
+    {
+        <div class="product">
+            <img src="@Url.Content(item.Product.ImagePath)" style="max-width: 200px; max-height: 200px;" alt="@item.ProductName" class="product-image">
+            <div class="product-details">
+                <span>@item.ProductName - $@item.ProductPrice</span>
+                <div class="quantity">
+                    Quantity: <span class="item-quantity">@item.Quantity</span>
+                </div>
+                <div>
+                    <button class="btn-remove" data-product-id="@item.Id">Remove</button>
+                </div>
+
+            </div>
+        </div>
+    }
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const addToCartButtons = document.querySelectorAll(".btn-add");
+        const removeButtons = document.querySelectorAll(".btn-remove");
+        const cart = document.getElementById("cart");
+
+        addToCartButtons.forEach(button => {
+            button.addEventListener("click", function() {
+                const productId = button.getAttribute("data-product-id");
+                addToCart(productId);
+            });
+        });
+
+        removeButtons.forEach(button => {
+            button.addEventListener("click", function() {
+                const productId = button.getAttribute("data-product-id");
+                removeFromCart(productId);
+            });
+        });
+
+        function addToCart(productId) {
+            // Implement your AJAX call or other logic to add the product to the cart
+            // Update the cart UI accordingly
+        }
+
+        function removeFromCart(productId) {
+            // Implement your AJAX call or other logic to remove the product from the cart
+            // Update the cart UI accordingly
+        }
+    });
+</script>
+
+<style>
+    .product {
+        margin-bottom: 20px; /* Adicione um espaçamento inferior entre produtos */
+    }
+</style>

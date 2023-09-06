@@ -8,15 +8,15 @@ namespace CandyWebMVC.Models.ViewModel
         public int Id { get; set; }
 
         [Required(ErrorMessage = "{0} required")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "{0} required")]
         public double Price { get; set; }
 
         [Required(ErrorMessage = "{0} required")]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "{0} required")]
-        public IFormFile ImageFile { get; set; }
+        public IFormFile? ImageFile { get; set; } 
     }
 }

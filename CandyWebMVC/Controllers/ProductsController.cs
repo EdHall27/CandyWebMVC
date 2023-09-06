@@ -173,7 +173,7 @@ namespace CandyWebMVC.Controllers
             }
 
             // Delete the image file from the server if it exists
-            if (!string.IsNullOrEmpty(products.ImagePath))
+            if (!string.IsNullOrEmpty(products?.ImagePath))
             {
                 ImageHelper imageHelper = new();
                 imageHelper.DeleteImageFile(products.ImagePath);
