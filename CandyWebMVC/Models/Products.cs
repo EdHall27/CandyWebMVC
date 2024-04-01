@@ -21,5 +21,8 @@ namespace CandyWebMVC.Models
         [Required(ErrorMessage = "{0} required")]
         public string ImagePath { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "{0} required")]
+        public int Stock { get; set; }
+
     }
 }

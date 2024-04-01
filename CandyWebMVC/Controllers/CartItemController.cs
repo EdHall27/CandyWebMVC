@@ -23,6 +23,12 @@ namespace CandyWebMVC.Controllers
         public IActionResult Index()
         {
             var cartItems = _cartHelper.GetCartItems();
+            // Calcular o subtotal
+            var subtotal = cartItems.Sum(item => item.Quantity * item.ProductPrice);
+
+            // Passar o subtotal para a view via ViewBag ou como parte de um modelo de view
+            ViewBag.Subtotal = subtotal;
+
             return View(cartItems);
         }
 

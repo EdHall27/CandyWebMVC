@@ -16,3 +16,16 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.img-thumbnail {
+    width: 100px; /* ou a largura que você preferir */
+    height: auto;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.btn-remove {
+    /* Estilização para o botão remover, se necessário */
+}

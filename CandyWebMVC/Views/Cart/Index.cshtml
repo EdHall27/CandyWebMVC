@@ -1,61 +1,63 @@
 ﻿@model List<Cart>
 
-<h1>Shopping Cart</h1>
+<h1>Meu Carrinho</h1>
 
-<div id="cart">
-    @foreach (var item in Model)
-    {
-        <div class="product">
-            <img src="@Url.Content(item.Product.ImagePath)" style="max-width: 200px; max-height: 200px;" alt="@item.ProductName" class="product-image">
-            <div class="product-details">
-                <span>@item.ProductName - $@item.ProductPrice</span>
-                <div class="quantity">
-                    Quantity: <span class="item-quantity">@item.Quantity</span>
-                </div>
-                <div>
-                    <button class="btn-remove" data-product-id="@item.Id">Remove</button>
-                </div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Produto</th>
+            <th>Entrega</th>
+            <th>Preço</th>
+            <th>Quantidade</th>
+            <th>Total</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr class="cart-item">
+                <td>
+                    <img src="@Url.Content(item.Product.ImagePath)" class="img-thumbnail" alt="@item.ProductName">
+                    <span>@item.ProductName</span>
+                </td>
+                <td>Calcular</td>
+                <td>R$ @item.ProductPrice</td>
+                <td>@item.Quantity</td>
+                <td>R$ @(item.ProductPrice * item.Quantity)</td>
+                <td>
+                    <button class="btn btn-danger btn-remove" data-product-id="@item.Id">Excluir do carrinho</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
 
-            </div>
-        </div>
-    }
+<div class="row">
+    <div class="col">
+        <label for="coupon">Cupom de Desconto</label>
+        <input type="text" id="coupon" class="form-control">
+        <button class="btn btn-primary mt-2">Adicionar</button>
+    </div>
+    <div class="col text-right">
+        <p>Subtotal: R$ <span id="subtotal-value">@ViewBag.Subtotal.ToString("N2")</span></p>
+        <!-- Adicione aqui mais detalhes sobre o total -->
+    </div>
 </div>
 
+<div class="text-right mt-4">
+    <button class="btn btn-success btn-lg">Fechar Pedido</button>
+</div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const addToCartButtons = document.querySelectorAll(".btn-add");
-        const removeButtons = document.querySelectorAll(".btn-remove");
-        const cart = document.getElementById("cart");
-
-        addToCartButtons.forEach(button => {
-            button.addEventListener("click", function() {
-                const productId = button.getAttribute("data-product-id");
-                addToCart(productId);
-            });
+    function updateSubtotal() 
+    {
+        let subtotal = 0;
+        document.querySelectorAll('.product').forEach(product => {
+            const price = parseFloat(product.querySelector('.product-price').textContent.replace('R$', ''));
+            const quantity = parseInt(product.querySelector('.item-quantity').textContent);
+            subtotal += price * quantity;
         });
-
-        removeButtons.forEach(button => {
-            button.addEventListener("click", function() {
-                const productId = button.getAttribute("data-product-id");
-                removeFromCart(productId);
-            });
-        });
-
-        function addToCart(productId) {
-            // Implement your AJAX call or other logic to add the product to the cart
-            // Update the cart UI accordingly
-        }
-
-        function removeFromCart(productId) {
-            // Implement your AJAX call or other logic to remove the product from the cart
-            // Update the cart UI accordingly
-        }
-    });
-</script>
-
-<style>
-    .product {
-        margin-bottom: 20px; /* Adicione um espaçamento inferior entre produtos */
+        document.getElementById('subtotal').textContent = subtotal.toFixed(2);
     }
-</style>
+</script>
