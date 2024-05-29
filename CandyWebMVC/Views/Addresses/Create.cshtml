@@ -1,0 +1,31 @@
+﻿@model CandyWebMVC.Models.ViewModel.AddressViewModel
+
+<h2>Endereços</h2>
+
+<form asp-action="SaveAddress" method="post">
+    @if (Model.Addresses != null && Model.Addresses.Any())
+{
+    <div class="form-group">
+        <label>Selecionar Endereço Existente:</label>
+        <select asp-for="SelectedAddressId" asp-items="Model.Addresses" class="form-control">
+            <option value="">-- Selecione um Endereço --</option>
+        </select>
+    </div>
+}
+else
+{
+    <p>Nenhum endereço disponível para seleção.</p>
+}
+
+
+    <div class="form-group">
+        <input type="hidden" asp-for="CPFID" />
+        <label>Novo Endereço:</label>
+        <input asp-for="NewAddress.Street" class="form-control" placeholder="Rua/Avenida" />
+        <input asp-for="NewAddress.City" class="form-control" placeholder="Cidade" />
+        <input asp-for="NewAddress.State" class="form-control" placeholder="Estado" />
+        <input asp-for="NewAddress.CEP" class="form-control" placeholder="CEP" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Salvar Endereço</button>
+</form>

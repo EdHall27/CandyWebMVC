@@ -1,0 +1,32 @@
+﻿@model IEnumerable<CandyWebMVC.Models.Address>
+
+<h1>Endereços</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Rua</th>
+            <th>Cidade</th>
+            <th>Estado</th>
+            <th>CEP</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var address in Model)
+    {
+        <tr>
+            <td>@address.Id</td>
+            <td>@address.Street</td>
+            <td>@address.City</td>
+            <td>@address.State</td>
+            <td>@address.CEP</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@address.Id">Editar</a> |
+                <a asp-action="Delete" asp-route-id="@address.Id">Deletar</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

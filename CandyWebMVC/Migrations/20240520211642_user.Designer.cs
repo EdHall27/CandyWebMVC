@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CandyWebMVC.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20240321211319_UpdateUserModel")]
-    partial class UpdateUserModel
+    [Migration("20240520211642_user")]
+    partial class user
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,8 +28,9 @@ namespace CandyWebMVC.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("CEP")
-                        .HasColumnType("int");
+                    b.Property<string>("CEP")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("City")
                         .IsRequired()
@@ -43,12 +44,12 @@ namespace CandyWebMVC.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("Userid")
+                    b.Property<int>("UserID")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Userid");
+                    b.HasIndex("UserID");
 
                     b.ToTable("Address");
                 });
@@ -88,6 +89,32 @@ namespace CandyWebMVC.Migrations
                     b.ToTable("CartItems");
                 });
 
+            modelBuilder.Entity("CandyWebMVC.Models.LoginModel", b =>
+                {
+                    b.Property<int>("LoginId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("CPFID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("UserCPFID")
+                        .HasColumnType("int");
+
+                    b.HasKey("LoginId");
+
+                    b.HasIndex("CPFID")
+                        .IsUnique();
+
+                    b.HasIndex("UserCPFID");
+
+                    b.ToTable("Login");
+                });
+
             modelBuilder.Entity("CandyWebMVC.Models.Products", b =>
                 {
                     b.Property<int>("Id")
@@ -109,6 +136,9 @@ namespace CandyWebMVC.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("double");
 
+                    b.Property<int>("Stock")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("Products");
@@ -120,7 +150,7 @@ namespace CandyWebMVC.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -132,8 +162,9 @@ namespace CandyWebMVC.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserPhone")
-                        .HasColumnType("int");
+                    b.Property<string>("UserPhone")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.HasKey("CPFID");
 
@@ -143,8 +174,8 @@ namespace CandyWebMVC.Migrations
             modelBuilder.Entity("CandyWebMVC.Models.Address", b =>
                 {
                     b.HasOne("CandyWebMVC.Models.User", "User")
-                        .WithMany("UserAdress")
-                        .HasForeignKey("Userid")
+                        .WithMany("UserAddresses")
+                        .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -162,9 +193,26 @@ namespace CandyWebMVC.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("CandyWebMVC.Models.LoginModel", b =>
+                {
+                    b.HasOne("CandyWebMVC.Models.User", null)
+                        .WithOne()
+                        .HasForeignKey("CandyWebMVC.Models.LoginModel", "CPFID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CandyWebMVC.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserCPFID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("CandyWebMVC.Models.User", b =>
                 {
-                    b.Navigation("UserAdress");
+                    b.Navigation("UserAddresses");
                 });
 #pragma warning restore 612, 618
         }

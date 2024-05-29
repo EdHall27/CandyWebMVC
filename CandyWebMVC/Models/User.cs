@@ -13,18 +13,16 @@ namespace CandyWebMVC.Models
         public string UserName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "{0} required")]
+        [EmailAddress(ErrorMessage = "Invalid email format")]
         public string UserEmail { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "{0} required")]
-        public int UserPhone { get; set; }
+        [Phone(ErrorMessage = "Invalid phone number format")]
+        public string? UserPhone { get; set; }
 
-        [Required(ErrorMessage = "{0} required")]
-        public ICollection<Address>? UserAdress   { get; set; }
+        
+        public string? PasswordHash { get; set; } // Armazene apenas o hash da senha
 
-        [Required(ErrorMessage = "{0} required")]
-        public string Password { get; set; } = string.Empty;
-
-        //[Required(ErrorMessage = "{0} required")]
-        //public Login Login { get; set; }
+        public virtual ICollection<Address>? UserAddresses { get; set; }
     }
 }

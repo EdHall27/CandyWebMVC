@@ -31,9 +31,14 @@
                     </ul>
                     <!-- Botão do Carrinho à Direita -->
                     <div class="ms-auto">
-                        <a class="nav-link text-dark" href="@Url.Action("Index", "Users")">
-                            <i class=""></i> User
-                        </a>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <a class="nav-link text-dark" href="@Url.Action("Index", "Users")">User</a>
+                        }
+                        else
+                        {
+                            <a class="nav-link text-dark" href="@Url.Action("Login", "Auth")">Login</a>
+                        }
                     </div>
                     <div class="ms-auto">
                         <a class="nav-link text-dark" href="@Url.Action("Index", "Cart")">

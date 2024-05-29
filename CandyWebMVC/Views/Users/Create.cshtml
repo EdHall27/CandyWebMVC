@@ -1,8 +1,4 @@
-﻿@model CandyWebMVC.Models.User
-
-@{
-    ViewData["Title"] = "Create";
-}
+﻿@model CandyWebMVC.Models.ViewModel.UserRegistrationViewModel
 
 <h1>Create</h1>
 
@@ -10,47 +6,46 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create" method="post" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="CPFID" class="control-label">CPF</label>
-                <input asp-for="CPFID" class="form-control" />
-                <span asp-validation-for="CPFID" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UserName" class="control-label">Name</label>
-                <input asp-for="UserName" class="form-control" />
-                <span asp-validation-for="UserName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UserEmail" class="control-label">Email</label>
-                <input asp-for="UserEmail" class="form-control" />
-                <span asp-validation-for="UserEmail" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UserPhone" class="form-label">Phone</label>
-                <input asp-for="UserPhone" class="form-control" />
-                <span asp-validation-for="UserPhone" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UserAdress" class="form-label">Adress</label>
-                <input asp-for="UserAdress" class="form-control" />
-                <span asp-validation-for="UserAdress" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-                <a class="btn btn-secondary" asp-action="Index">Back to List</a>
-            </div>
+        <form asp-action="Create" method="post">
+            <fieldset>
+                <legend>Dados do Usuário</legend>
+                <div class="form-group">
+                    <label asp-for="User.UserName">Nome</label>
+                    <input asp-for="User.UserName" class="form-control" />
+                    <span asp-validation-for="User.UserName" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="User.UserEmail">Email</label>
+                    <input asp-for="User.UserEmail" class="form-control" />
+                    <span asp-validation-for="User.UserEmail" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="User.UserPhone">Phone</label>
+                    <input asp-for="User.UserPhone" class="form-control" />
+                    <span asp-validation-for="User.UserPhone" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="User.CPFID">CPF</label>
+                    <input asp-for="User.CPFID" class="form-control" />
+                    <span asp-validation-for="User.CPFID" class="text-danger"></span>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Dados de Login</legend>
+                <div class="form-group">
+                    <label asp-for="Password">Senha</label>
+                    <input asp-for="Password" type="password" class="form-control" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+            </fieldset>
+            <button type="submit" class="btn btn-primary">Registrar</button>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-    }
+}
