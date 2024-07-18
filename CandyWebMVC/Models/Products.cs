@@ -6,7 +6,7 @@ namespace CandyWebMVC.Models
     [Table("Products")]
     public class Products
     {
-        [Required(ErrorMessage = "{0} required")]
+        
         public int Id { get; set; }
 
         [Required(ErrorMessage = "{0} required")]
@@ -17,11 +17,10 @@ namespace CandyWebMVC.Models
 
         [Required(ErrorMessage = "{0} required")]
         public string Description { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "{0} required")]
+        
         public string ImagePath { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "{0} required")]
+       
         public int Stock { get; set; }
 
     }

@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using CandyWebMVC.Data;
 using System.Linq;
+using CandyWebMVC.Models;
 using CandyWebMVC.Models.ViewModel;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
-using CandyWebMVC.Models;
 
 namespace CandyWebMVC.Controllers
 {
@@ -17,102 +19,113 @@ namespace CandyWebMVC.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        // Listar todos os endereços associados ao CPFID do usuário logado
+        public async Task<IActionResult> Index()
         {
-            var cpfIdString = User.FindFirstValue(ClaimTypes.NameIdentifier); // Obtenha o CPF do usuário atual
-
-            // Tenta converter a string CPF para int.
-            if (int.TryParse(cpfIdString, out int cpfId))
+            var cpfIdString = User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value;
+            if (!int.TryParse(cpfIdString, out int cpfIdInt))
             {
-                var userAddresses = _context.Addresses.Where(a => a.UserID == cpfId).ToList();
+                return View("Error", new ErrorViewModel { RequestId = "CPFID não disponível" });
+            }
 
-                var model = new AddressViewModel
-                {
-                    Addresses = new SelectList(userAddresses, "AddressId", "FullAddress"), // 'FullAddress' é uma propriedade em 'Address' que você precisa definir
-                    NewAddress = new Address()
-                };
-                return View(model);
-            }
-            else
-            {
-                // Se a conversão falhar, você deve decidir o que fazer. 
-                // Por exemplo, retornar para uma página de erro ou uma view com mensagem de erro.
-                // Aqui, estamos retornando para a página de erro padrão.
-                return RedirectToAction("Error"); // Supondo que você tenha uma action "Error" definida para tratar erros
-            }
+            var addresses = await _context.Addresses.Where(a => a.CPFID == cpfIdInt).ToListAsync();
+            return View(addresses);
         }
 
-        public IActionResult Address(int cpfId)
+        // Criar um novo endereço
+        public IActionResult Create()
         {
-            var addresses = _context.Addresses.Where(a => a.UserID == cpfId).ToList();
-            var model = new AddressViewModel
-            {
-                Addresses = new SelectList(addresses, "AddressId", "FullAddress"),
-                NewAddress = new Address(),
-                CPFID = cpfId // Define o CPFID para o novo endereço
-            };
+            var model = new Address();
             return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveAddress(AddressViewModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Address model)
         {
             if (ModelState.IsValid)
             {
-                if (model.SelectedAddressId.HasValue)
+                // Pega o CPFID do usuário logado
+                var cpfIdString = User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value;
+                if (int.TryParse(cpfIdString, out int cpfId))
                 {
-                    // Lógica para atualizar o endereço
+                    model.CPFID = cpfId; // Atribui o CPFID ao novo endereço
+                    _context.Addresses.Add(model);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction("Index");
                 }
                 else
                 {
-                    _context.Addresses.Add(model.NewAddress);
-                    await _context.SaveChangesAsync();
+                    ModelState.AddModelError("", "Erro ao identificar usuário.");
                 }
-                return RedirectToAction("Index");
             }
-            // Retorna à view de entrada para correções se o modelo não for válido
-            return View("Create", model);
+            return View(model);
         }
 
-
-        // Método GET para a criação de endereços
-        public IActionResult Create()
+        // Editar um endereço existente
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
         {
+            var address = await _context.Addresses.FindAsync(id);
+            if (address == null || address.CPFID != int.Parse(User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value ?? "0"))
+            {
+                return NotFound();
+            }
+
             var model = new AddressViewModel
             {
-                // Assegure-se de que GetAvailableAddresses() nunca retorna null
-                Addresses = GetAvailableAddresses(),
-                NewAddress = new Address()  // Instancia um novo Address para ser preenchido no formulário
+                NewAddress = address,
+                CPFID = address.CPFID
             };
 
             return View(model);
         }
 
-        // Método POST para a criação de endereços
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(AddressViewModel model)
+        public async Task<IActionResult> Edit(int id, AddressViewModel viewModel)
         {
-            if (ModelState.IsValid)
+            if (id != viewModel.NewAddress.Id || viewModel.CPFID != int.Parse(User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value))
             {
-                _context.Addresses.Add(model.NewAddress);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index"); // Redireciona para a lista de endereços
+                return NotFound();
             }
 
-            // Se não for válido, retorne para a view com o modelo atual
-            model.Addresses = GetAvailableAddresses(); // Re-popula a lista para a view
-            return View(model);
+            if (ModelState.IsValid)
+            {
+                var address = await _context.Addresses.FindAsync(id);
+                if (address == null)
+                {
+                    return NotFound();
+                }
+
+                // Atualiza propriedades
+                address.Street = viewModel.NewAddress.Street;
+                address.City = viewModel.NewAddress.City;
+                address.State = viewModel.NewAddress.State;
+                address.CEP = viewModel.NewAddress.CEP;
+                
+
+                _context.Update(address);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(viewModel);
         }
 
-        private IEnumerable<SelectListItem> GetAvailableAddresses()
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
         {
-            // Este método deve retornar uma lista de SelectListItem. Se não houver endereços, ele deve retornar uma lista vazia, não null.
-            return _context.Addresses.Select(a => new SelectListItem
+            var address = await _context.Addresses.FindAsync(id);
+            if (address == null)
             {
-                Text = a.Street + ", " + a.City,
-                Value = a.Id.ToString()
-            }).ToList();
+                return NotFound();
+            }
+
+            _context.Addresses.Remove(address);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true });
         }
     }
 }

@@ -19,6 +19,9 @@
                 @Html.DisplayNameFor(model => model.Price)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.ImagePath)
             </th>
             <th></th>
@@ -35,6 +38,9 @@
                 @Html.DisplayFor(modelItem => item.Price)
             </td>
             <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
                 @if (!string.IsNullOrEmpty(item.ImagePath))
                 {
                 <img src="@Url.Content(item.ImagePath)" alt="@item.Name" style="max-width: 200px; max-height: 200px;" />
@@ -46,7 +52,6 @@
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info">Details</a> |
                 <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Delete</a>
             </td>
         </tr>

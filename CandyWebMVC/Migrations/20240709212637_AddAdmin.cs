@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CandyWebMVC.Migrations
 {
     /// <inheritdoc />
-    public partial class user : Migration
+    public partial class AddAdmin : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,7 +15,6 @@ namespace CandyWebMVC.Migrations
             migrationBuilder.AlterDatabase()
                 .Annotation("MySql:CharSet", "utf8mb4");
 
-           
 
             migrationBuilder.CreateTable(
                 name: "User",
@@ -29,7 +28,8 @@ namespace CandyWebMVC.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     UserPhone = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    PasswordHash = table.Column<string>(type: "longtext", nullable: false)
+                    IsAdmin = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    PasswordHash = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
@@ -38,7 +38,33 @@ namespace CandyWebMVC.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
-            
+            migrationBuilder.CreateTable(
+                name: "CartItems",
+                columns: table => new
+                {
+                    CartItemId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    CartId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CartItems", x => x.CartItemId);
+                    table.ForeignKey(
+                        name: "FK_CartItems_Carts_CartId",
+                        column: x => x.CartId,
+                        principalTable: "Carts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CartItems_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "Address",
@@ -54,14 +80,14 @@ namespace CandyWebMVC.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CEP = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    UserID = table.Column<int>(type: "int", nullable: false)
+                    CPFID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Address", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Address_User_UserID",
-                        column: x => x.UserID,
+                        name: "FK_Address_User_CPFID",
+                        column: x => x.CPFID,
                         principalTable: "User",
                         principalColumn: "CPFID",
                         onDelete: ReferentialAction.Cascade);
@@ -77,7 +103,7 @@ namespace CandyWebMVC.Migrations
                     CPFID = table.Column<int>(type: "int", nullable: false),
                     PasswordHash = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    UserCPFID = table.Column<int>(type: "int", nullable: false)
+                    UserCPFID = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -92,16 +118,24 @@ namespace CandyWebMVC.Migrations
                         name: "FK_Login_User_UserCPFID",
                         column: x => x.UserCPFID,
                         principalTable: "User",
-                        principalColumn: "CPFID",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "CPFID");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Address_UserID",
+                name: "IX_Address_CPFID",
                 table: "Address",
-                column: "UserID");
+                column: "CPFID");
 
+            migrationBuilder.CreateIndex(
+                name: "IX_CartItems_CartId",
+                table: "CartItems",
+                column: "CartId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CartItems_ProductId",
+                table: "CartItems",
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Login_CPFID",
@@ -126,6 +160,9 @@ namespace CandyWebMVC.Migrations
 
             migrationBuilder.DropTable(
                 name: "Login");
+
+            migrationBuilder.DropTable(
+                name: "Carts");
 
             migrationBuilder.DropTable(
                 name: "Products");

@@ -1,32 +1,67 @@
 ﻿@model IEnumerable<CandyWebMVC.Models.Address>
 
-<h1>Endereços</h1>
+@{
+    ViewData["Title"] = "Endereços";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Adicionar Novo Endereço</a>
+</p>
 
 <table class="table">
     <thead>
         <tr>
-            <th>ID</th>
             <th>Rua</th>
             <th>Cidade</th>
             <th>Estado</th>
             <th>CEP</th>
-            <th>Ações</th>
+            <th></th> <!-- Coluna para ações -->
         </tr>
     </thead>
     <tbody>
     @foreach (var address in Model)
     {
         <tr>
-            <td>@address.Id</td>
             <td>@address.Street</td>
             <td>@address.City</td>
             <td>@address.State</td>
             <td>@address.CEP</td>
             <td>
-                <a asp-action="Edit" asp-route-id="@address.Id">Editar</a> |
-                <a asp-action="Delete" asp-route-id="@address.Id">Deletar</a>
+                <a asp-action="Edit" asp-route-id="@address.Id" class="btn btn-sm btn-info">Editar</a>
+                <button class="btn btn-danger" onclick="confirmDeletion('@address.Id')">Excluir</button>
             </td>
         </tr>
     }
     </tbody>
 </table>
+
+
+@Html.AntiForgeryToken()
+<script>
+function confirmDeletion(id) {
+    if (confirm("Você tem certeza que deseja deletar este endereço?")) {
+        // Enviar solicitação para o servidor para deletar o endereço
+        fetch('/Addresses/Delete/' + id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Endereço deletado com sucesso!');
+                window.location.reload();  // Recarregar a página para atualizar a lista
+            } else {
+                alert('Falha ao deletar o endereço!');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao deletar endereço:', error);
+            alert('Erro ao deletar endereço!');
+        });
+    }
+}
+</script>

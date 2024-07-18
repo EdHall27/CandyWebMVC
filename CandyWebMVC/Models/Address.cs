@@ -7,6 +7,7 @@ namespace CandyWebMVC.Models
     public class Address
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "{0} required")]
@@ -22,7 +23,7 @@ namespace CandyWebMVC.Models
         public string CEP { get; set; } = string.Empty;
 
         // Foreign Key
-        public int UserID { get; set; }
+        public int CPFID { get; set; }
 
         // Navigation property for EF Core
         public User? User { get; set; }

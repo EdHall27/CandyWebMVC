@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CandyWebMVC.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20240520211642_user")]
-    partial class user
+    [Migration("20240710184938_UpdateIsAdmin")]
+    partial class UpdateIsAdmin
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,6 +32,9 @@ namespace CandyWebMVC.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<int>("CPFID")
+                        .HasColumnType("int");
+
                     b.Property<string>("City")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -44,12 +47,9 @@ namespace CandyWebMVC.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("CPFID");
 
                     b.ToTable("Address");
                 });
@@ -63,26 +63,32 @@ namespace CandyWebMVC.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("IdProduct")
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Carts");
+                });
+
+            modelBuilder.Entity("CandyWebMVC.Models.CartItem", b =>
+                {
+                    b.Property<int>("CartItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("CartId")
                         .HasColumnType("int");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ProductName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<decimal>("ProductPrice")
-                        .HasColumnType("decimal(65,30)");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.HasKey("CartItemId");
 
-                    b.HasKey("Id");
+                    b.HasIndex("CartId");
 
                     b.HasIndex("ProductId");
 
@@ -102,7 +108,7 @@ namespace CandyWebMVC.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserCPFID")
+                    b.Property<int?>("UserCPFID")
                         .HasColumnType("int");
 
                     b.HasKey("LoginId");
@@ -150,8 +156,10 @@ namespace CandyWebMVC.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("UserEmail")
@@ -175,20 +183,28 @@ namespace CandyWebMVC.Migrations
                 {
                     b.HasOne("CandyWebMVC.Models.User", "User")
                         .WithMany("UserAddresses")
-                        .HasForeignKey("UserID")
+                        .HasForeignKey("CPFID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("CandyWebMVC.Models.Cart", b =>
+            modelBuilder.Entity("CandyWebMVC.Models.CartItem", b =>
                 {
+                    b.HasOne("CandyWebMVC.Models.Cart", "Cart")
+                        .WithMany("Items")
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("CandyWebMVC.Models.Products", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Cart");
 
                     b.Navigation("Product");
                 });
@@ -203,11 +219,14 @@ namespace CandyWebMVC.Migrations
 
                     b.HasOne("CandyWebMVC.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserCPFID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserCPFID");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CandyWebMVC.Models.Cart", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("CandyWebMVC.Models.User", b =>

@@ -25,7 +25,7 @@
         
         function addToCart(productId) {
             $.ajax({
-                url: "/Cart/AddToCart",
+                url: "/CartItems/AddToCart",
                 type: "post",
                 data: { productId : productId, quantity: 1 },
                 success: function () {

@@ -1,31 +1,30 @@
-﻿@model CandyWebMVC.Models.ViewModel.AddressViewModel
+﻿@model CandyWebMVC.Models.Address
 
-<h2>Endereços</h2>
+<h2>Adicionar Novo Endereço</h2>
 
-<form asp-action="SaveAddress" method="post">
-    @if (Model.Addresses != null && Model.Addresses.Any())
-{
+<form asp-action="Create" method="post">
     <div class="form-group">
-        <label>Selecionar Endereço Existente:</label>
-        <select asp-for="SelectedAddressId" asp-items="Model.Addresses" class="form-control">
-            <option value="">-- Selecione um Endereço --</option>
-        </select>
+        <label asp-for="Street" class="control-label">Rua</label>
+        <input asp-for="Street" class="form-control" />
+        <span asp-validation-for="Street" class="text-danger"></span>
     </div>
-}
-else
-{
-    <p>Nenhum endereço disponível para seleção.</p>
-}
-
-
+   <div class="form-group">
+        <label asp-for="City" class="control-label">Cidade</label>
+        <input asp-for="City" class="form-control" />
+        <span asp-validation-for="City" class="text-danger"></span>
+    </div>
     <div class="form-group">
-        <input type="hidden" asp-for="CPFID" />
-        <label>Novo Endereço:</label>
-        <input asp-for="NewAddress.Street" class="form-control" placeholder="Rua/Avenida" />
-        <input asp-for="NewAddress.City" class="form-control" placeholder="Cidade" />
-        <input asp-for="NewAddress.State" class="form-control" placeholder="Estado" />
-        <input asp-for="NewAddress.CEP" class="form-control" placeholder="CEP" />
+        <label asp-for="State" class="control-label">Estado</label>
+        <input asp-for="State" class="form-control" />
+        <span asp-validation-for="State" class="text-danger"></span>
+    </div>
+   <div class="form-group">
+        <label asp-for="CEP" class="control-label">CEP</label>
+        <input asp-for="CEP" class="form-control" />
+        <span asp-validation-for="CEP" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Salvar Endereço</button>
+    <div class="form-group">
+        <input type="submit" value="Salvar Endereço" class="btn btn-primary" />
+    </div>
 </form>

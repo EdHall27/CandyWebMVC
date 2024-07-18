@@ -15,7 +15,7 @@ namespace CandyWebMVC.Data
             modelBuilder.Entity<User>()
             .HasMany(u => u.UserAddresses)
             .WithOne(a => a.User)
-            .HasForeignKey(a => a.UserID);
+            .HasForeignKey(a => a.CPFID);
 
             modelBuilder.Entity<User>()
            .HasKey(u => u.CPFID);
@@ -34,7 +34,8 @@ namespace CandyWebMVC.Data
 
 
         public DbSet<Products> Products { get; set; }
-        public DbSet<Cart> CartItems { get; set; }
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<LoginModel> loginModels { get; set; }
         public DbSet<Address> Addresses { get; set; }

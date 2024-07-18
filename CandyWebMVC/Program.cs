@@ -1,6 +1,7 @@
 using CandyWebMVC.Data;
 using CandyWebMVC.Helper;
 using CandyWebMVC.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<CartHelper>();
-builder.Services.AddSession();
+builder.Services.AddSession(
+    options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.IsEssential = true;  // Indica que o cookie de sessão é essencial para a aplicação.
+});
 
 // Configuração do Entity Framework e Identity
 builder.Services.AddDbContext<Context>
@@ -21,17 +28,23 @@ builder.Services.AddDbContext<Context>
     Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.32-mysql")));
 
 // Adicionando suporte a autenticação com cookies
-builder.Services.AddAuthentication("AppCookie").AddCookie("AppCookie", options =>
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
 {
     options.Cookie.HttpOnly = true;
     options.ExpireTimeSpan = TimeSpan.FromHours(1);
-    options.LoginPath = "/Auth/Login";  // Direciona para Login se não autenticado
-    options.LogoutPath = "/Auth/Logout"; // Direciona para Logout
-    options.SlidingExpiration = true; // Renova o tempo de expiração do cookie se o usuário permanecer ativo
+    options.LoginPath = "/Auth/Login";
+    options.LogoutPath = "/Auth/Logout";
+    //options.AccessDeniedPath = "/Auth/LoginRequired";
+    options.SlidingExpiration = true;
 });
 
-// Continua a configuração do serviço
-builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -42,6 +55,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseSession();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -50,13 +64,13 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
-app.MapRazorPages();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+    endpoints.MapRazorPages();
+});
 
-app.UseSession();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

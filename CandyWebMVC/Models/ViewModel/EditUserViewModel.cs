@@ -1,30 +1,25 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CandyWebMVC.Models
+
+namespace CandyWebMVC.Models.ViewModel
 {
-    [Table("User")]
-    public class User
+    public class EditUserViewModel
     {
-        [Key]
         public int CPFID { get; set; }
 
         [Required(ErrorMessage = "{0} required")]
-        public string UserName { get; set; } = string.Empty;
+        public string UserName { get; set; }
 
         [Required(ErrorMessage = "{0} required")]
         [EmailAddress(ErrorMessage = "Invalid email format")]
-        public string UserEmail { get; set; } = string.Empty;
+        public string UserEmail { get; set; }
 
         [Required(ErrorMessage = "{0} required")]
         [Phone(ErrorMessage = "Invalid phone number format")]
         public string? UserPhone { get; set; }
 
-
         public bool IsAdmin { get; set; }
-
-        public string? PasswordHash { get; set; } // Armazene apenas o hash da senha
-
-        public virtual ICollection<Address>? UserAddresses { get; set; }
     }
 }

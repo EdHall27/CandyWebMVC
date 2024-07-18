@@ -1,16 +1,14 @@
 ﻿@model IEnumerable<CandyWebMVC.Models.User>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Usuários";
 }
 
-<h1>Index</h1>
+<h1>Minha Conta</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
+
+<table class="table table-hover">
+    <thead class="thead-dark">
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.CPFID)
@@ -24,37 +22,42 @@
             <th>
                 @Html.DisplayNameFor(model => model.UserPhone)
             </th>
-            <th></th>
+            <th>Endereços</th>
+            <th>Ações</th>
+            <th>Sair</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CPFID)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.UserName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.UserEmail)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.UserPhone)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.CPFID">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.CPFID">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.CPFID">Delete</a>
-                </td>
-                <td>
-                    <form asp-action="Logout" asp-controller="Auth" method="post">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-                    </form>
-                </td>
-            </tr>
-        }
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.CPFID)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserEmail)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserPhone)
+            </td>
+            <td>
+                <a href="@Url.Action("Index", "Addresses")" class="btn btn-success">Gerenciar Endereços</a>
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.CPFID" class="btn btn-secondary">Editar</a> |
+                <a asp-action="Details" asp-route-id="@item.CPFID" class="btn btn-info">Detalhes</a> |
+                <a asp-action="Delete" asp-route-id="@item.CPFID" class="btn btn-danger">Deletar</a>
+            </td>
+            <td>
+                <form asp-action="Logout" asp-controller="Auth" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-warning">Logout</button>
+                </form>
+            </td>
+        </tr>
+    }
     </tbody>
 </table>

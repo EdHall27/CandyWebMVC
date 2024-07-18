@@ -24,9 +24,12 @@ namespace CandyWebMVC.Controllers
         // GET: Products
         public async Task<IActionResult> Index()
         {
+            var isAdmin = User.Claims.Any(c => c.Type == "IsAdmin" && c.Value == "true");
+            ViewBag.IsAdmin = isAdmin;
+
             return _context.Products != null ?
-                        View(await _context.Products.ToListAsync()) :
-                        Problem("Entity set 'Context.Products'  is null.");
+                            View(await _context.Products.ToListAsync()) :
+                            Problem("Entity set 'Context.Products' is null.");
         }
 
         // GET: Products/Details/5
@@ -62,7 +65,7 @@ namespace CandyWebMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                string imagePath ="";
+                string imagePath = "";
 
                 if (imageViewModel.ImageFile != null)
                 {
@@ -109,9 +112,9 @@ namespace CandyWebMVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,ImagePath")] Products products)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,Description,Stock")] Products product)
         {
-            if (id != products.Id)
+            if (id != product.Id)
             {
                 return NotFound();
             }
@@ -120,12 +123,34 @@ namespace CandyWebMVC.Controllers
             {
                 try
                 {
-                    _context.Update(products);
+                    var productToUpdate = await _context.Products.FindAsync(id);
+                    if (productToUpdate == null)
+                    {
+                        return NotFound();
+                    }
+
+                    productToUpdate.Name = product.Name;
+                    productToUpdate.Price = product.Price;
+                    productToUpdate.Description = product.Description;
+                    productToUpdate.Stock = product.Stock;
+
+                    // Handle image upload
+                    if (Request.Form.Files.Count > 0)
+                    {
+                        var file = Request.Form.Files.FirstOrDefault();
+                        if (file != null && file.Length > 0)
+                        {
+                            ImageHelper imageHelper = new();
+                            productToUpdate.ImagePath = imageHelper.SaveImageAndGetPath(file);
+                        }
+                    }
+
+                    _context.Update(productToUpdate);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductsExists(products.Id))
+                    if (!ProductsExists(product.Id))
                     {
                         return NotFound();
                     }
@@ -136,7 +161,7 @@ namespace CandyWebMVC.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(products);
+            return View(product);
         }
 
         // GET: Products/Delete/5

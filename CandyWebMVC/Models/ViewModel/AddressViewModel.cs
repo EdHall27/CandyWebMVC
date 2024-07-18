@@ -4,9 +4,10 @@ namespace CandyWebMVC.Models.ViewModel
 {
     public class AddressViewModel
     {
-        public int? SelectedAddressId { get; set; }
-        public Address? NewAddress { get; set; }
-        public IEnumerable<SelectListItem>? Addresses { get; set; }
-        public int CPFID { get; set; } // Adicionado para garantir que possamos predefinir o CPFID se necessário
+        public IEnumerable<Address> Addresses { get; set; } = new List<Address>();
+        public IEnumerable<SelectListItem> AddressSelectList { get; set; } = new List<SelectListItem>(); // Usado para dropdown
+        public Address NewAddress { get; set; } = new Address(); // Para adicionar um novo endereço
+        public int? SelectedAddressId { get; set; } // Opcional: para selecionar um endereço existente
+        public int CPFID { get; set; }
     }
 }

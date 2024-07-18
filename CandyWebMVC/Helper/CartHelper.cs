@@ -1,66 +1,79 @@
 ﻿using CandyWebMVC.Models;
-using Newtonsoft.Json;
-using System.Text;
-using CandyWebMVC.Data;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using CandyWebMVC.Data;
+using System.Linq;
+using System.Security.Claims;
 
 namespace CandyWebMVC.Helper
 {
     public class CartHelper
     {
         private readonly Context _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CartHelper(Context context)
+        public CartHelper(Context context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
-        public List<Cart> GetCartItems()
+        // Recuperar ID do usuário logado
+        private int GetCurrentUserId()
         {
-            return _context.CartItems.Include(item => item.Product).ToList();
+            return int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("CPFID"));
+        }
+
+        public List<CartItem> GetCartItems()
+        {
+            int userId = GetCurrentUserId();
+            var cart = _context.Carts.Include(c => c.Items)
+                                     .ThenInclude(i => i.Product)
+                                     .FirstOrDefault(c => c.UserId == userId);
+
+            return (List<CartItem>)(cart?.Items ?? new List<CartItem>());
         }
 
         public void AddToCart(int productId, int quantity)
         {
-            var existingCartItem = _context.CartItems.FirstOrDefault(item => item.IdProduct == productId);
+            int userId = GetCurrentUserId();
+            var cart = _context.Carts.Include(c => c.Items)
+                                     .FirstOrDefault(c => c.UserId == userId);
 
-            if (existingCartItem != null)
+            var cartItem = cart.Items.FirstOrDefault(item => item.ProductId == productId);
+
+            if (cartItem != null)
             {
-                existingCartItem.Quantity += quantity;
-                _context.SaveChanges();
+                // Incrementa a quantidade do item existente
+                cartItem.Quantity += quantity;
             }
             else
             {
-                var product = _context.Products.FirstOrDefault(p => p.Id == productId);
-
+                // Adiciona novo item ao carrinho
+                var product = _context.Products.Find(productId);
                 if (product != null)
                 {
-                    var cartItem = new Cart
+                    cartItem = new CartItem
                     {
-                        IdProduct = product.Id,
-                        ProductName = product.Name,
-                        ProductPrice = (decimal)product.Price,
-                        Product = product,
-                        Quantity = quantity
+                        ProductId = productId,
+                        Quantity = quantity,
+                        Product = product
                     };
-                    _context.CartItems.Add(cartItem);
-                    _context.SaveChanges();
+                    cart.Items.Add(cartItem);
                 }
             }
-            
+
+            _context.SaveChanges();
         }
 
         public void RemoveFromCart(int cartItemId)
         {
-            var cartItem = _context.CartItems.FirstOrDefault(item => item.Id == cartItemId);
-
+            var cartItem = _context.CartItems.Find(cartItemId);
             if (cartItem != null)
             {
                 _context.CartItems.Remove(cartItem);
                 _context.SaveChanges();
             }
         }
+
     }
 }
-

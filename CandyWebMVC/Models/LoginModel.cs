@@ -13,7 +13,7 @@ namespace CandyWebMVC.Models
         public int CPFID { get; set; }
 
 
-        public string? PasswordHash { get; set; }
+        public string PasswordHash { get; set; }
 
         public virtual User? User { get; set; }
     }
