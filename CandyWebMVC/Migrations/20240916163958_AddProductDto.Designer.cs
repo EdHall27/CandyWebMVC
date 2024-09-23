@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CandyWebMVC.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20240710184938_UpdateIsAdmin")]
-    partial class UpdateIsAdmin
+    [Migration("20240916163958_AddProductDto")]
+    partial class AddProductDto
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -1,0 +1,16 @@
+<!-- Home Content -->
+<h1>Produtos Disponíveis</h1>
+<div class="home-container">
+        <div class="product-card" *ngFor="let product of products">
+          <img [src]="product.imageUrl" alt="{{ product.name }}">
+          <h3>{{ product.name }}</h3>
+          <p><strong>Preço:</strong> {{ product.price | currency }}</p>
+          <div class="product-actions">
+            <button (click)="addToCart(product)">Comprar</button>
+            <button (click)="viewDetails(product.id)">Detalhes</button>
+          </div>
+        </div>
+    
+    <!-- Mostrar mensagem se não houver produtos -->
+    <p *ngIf="products.length === 0">Nenhum produto disponível no momento.</p>
+</div>

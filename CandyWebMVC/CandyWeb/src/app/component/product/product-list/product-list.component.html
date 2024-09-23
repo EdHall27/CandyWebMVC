@@ -1,0 +1,31 @@
+<h2>Lista de Produtos</h2>
+<button routerLink="/create" class="btn btn-primary">Adicionar Produto</button>
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Nome</th>
+      <th>Preço</th>
+      <th>Descrição</th>
+      <th>Estoque</th>
+      <th>Imagem</th> <!-- Adicionado -->
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let product of products$ | async">
+      <td>{{ product.id }}</td>
+      <td>{{ product.name }}</td>
+      <td>{{ product.price | currency }}</td>
+      <td>{{ product.description }}</td>
+      <td>{{ product.stock }}</td>
+      <td>
+        <img [src]="getImageUrl(product.imagePath)" alt="{{ product.name }}" width="100" /> <!-- Adicionado -->
+      </td>
+      <td>
+        <button [routerLink]="['/edit', product.id]" class="btn btn-secondary">Editar</button>
+        <button (click)="deleteProduct(product.id!)" class="btn btn-danger">Excluir</button>
+      </td>
+    </tr>
+  </tbody>
+</table>

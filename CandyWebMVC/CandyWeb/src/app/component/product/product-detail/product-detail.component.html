@@ -1,0 +1,12 @@
+<div *ngIf="product">
+  <h2>{{ product.name }}</h2>
+  <img [src]="getImageUrl(product.imagePath)" alt="{{ product.name }}" width="500"/>
+  <p>{{ product.description }}</p>
+  <p><strong>Preço:</strong> {{ product.price | currency }}</p>
+  <p><strong>Estoque:</strong> {{ product.stock }}</p>
+  <button routerLink="/product">Voltar para lista de produtos</button>
+</div>
+
+<div *ngIf="!product">
+  <p>Carregando detalhes do produto...</p>
+</div>

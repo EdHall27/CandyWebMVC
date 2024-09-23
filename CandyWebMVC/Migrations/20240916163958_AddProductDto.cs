@@ -5,16 +5,12 @@
 namespace CandyWebMVC.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateIsAdmin : Migration
+    public partial class AddProductDto : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "IsAdmin",
-                table: "User",
-                defaultValue: false,
-                nullable: false);
+
         }
 
         /// <inheritdoc />

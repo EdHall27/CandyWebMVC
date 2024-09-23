@@ -9,208 +9,193 @@ using CandyWebMVC.Data;
 using CandyWebMVC.Models;
 using CandyWebMVC.Models.ViewModel;
 using CandyWebMVC.Helper;
+using Microsoft.AspNetCore.Authorization;
+using CandyWebMVC.Models.DTOs;
+using Microsoft.Extensions.Logging;
 
 namespace CandyWebMVC.Controllers
 {
-    public class ProductsController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ProductsController : ControllerBase
     {
         private readonly Context _context;
+        private readonly ImageHelper _imageHelper;
+        private readonly ILogger<ProductsController> _logger;
 
-        public ProductsController(Context context)
+        public ProductsController(Context context, ILogger<ProductsController> logger)
         {
             _context = context;
+            _imageHelper = new ImageHelper();
+            _logger = logger;
         }
 
-        // GET: Products
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<Products>>> GetProducts()
         {
-            var isAdmin = User.Claims.Any(c => c.Type == "IsAdmin" && c.Value == "true");
-            ViewBag.IsAdmin = isAdmin;
-
-            return _context.Products != null ?
-                            View(await _context.Products.ToListAsync()) :
-                            Problem("Entity set 'Context.Products' is null.");
+            if(_context.Products == null)
+                return NotFound("No products found.");
+            return Ok(await _context.Products.ToListAsync());
         }
 
-        // GET: Products/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<Products>> GetProduct(int id)
         {
-            if (id == null || _context.Products == null)
+            var product = await _context.Products.FindAsync(id);
+
+            if (product == null)
             {
                 return NotFound();
             }
 
-            var products = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (products == null)
-            {
-                return NotFound();
-            }
-
-            return View(products);
+            return Ok(product);
         }
 
-        // GET: Products/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Products/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([FromForm] ImageViewModel imageViewModel)
+        [AllowAnonymous]
+        public async Task<ActionResult<Products>> CreateProduct([FromForm] ProductDto productDto)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                string imagePath = "";
+                return BadRequest(ModelState);
+            }
 
-                if (imageViewModel.ImageFile != null)
+            var product = new Products
+            {
+                Name = productDto.Name,
+                Price = productDto.Price,
+                Description = productDto.Description,
+                Stock = productDto.Stock
+            };
+
+            if (productDto.Image != null)
+            {
+                var validationResult = ValidateImage(productDto.Image);
+                if (validationResult != null)
                 {
-                    // Save the image to the server's file system and get the path
-                    ImageHelper imageHelper = new();
-                    imagePath = imageHelper.SaveImageAndGetPath(imageViewModel.ImageFile);
+                    return BadRequest(validationResult);
                 }
 
-                var entity = new Products
-                {
-                    Name = imageViewModel.Name,
-                    Price = imageViewModel.Price,
-                    Description = imageViewModel.Description,
-                    ImagePath = imagePath
-                };
-
-                _context.Products.Add(entity);
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction("Index"); // Or any other action
+                var imagePath = _imageHelper.SaveImageAndGetPath(productDto.Image);
+                product.ImagePath = imagePath;
             }
 
-            return View(imageViewModel);
-        }
-
-        // GET: Products/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null || _context.Products == null)
-            {
-                return NotFound();
-            }
-
-            var products = await _context.Products.FindAsync(id);
-            if (products == null)
-            {
-                return NotFound();
-            }
-            return View(products);
-        }
-
-        // POST: Products/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,Description,Stock")] Products product)
-        {
-            if (id != product.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    var productToUpdate = await _context.Products.FindAsync(id);
-                    if (productToUpdate == null)
-                    {
-                        return NotFound();
-                    }
-
-                    productToUpdate.Name = product.Name;
-                    productToUpdate.Price = product.Price;
-                    productToUpdate.Description = product.Description;
-                    productToUpdate.Stock = product.Stock;
-
-                    // Handle image upload
-                    if (Request.Form.Files.Count > 0)
-                    {
-                        var file = Request.Form.Files.FirstOrDefault();
-                        if (file != null && file.Length > 0)
-                        {
-                            ImageHelper imageHelper = new();
-                            productToUpdate.ImagePath = imageHelper.SaveImageAndGetPath(file);
-                        }
-                    }
-
-                    _context.Update(productToUpdate);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ProductsExists(product.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(product);
-        }
-
-        // GET: Products/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || _context.Products == null)
-            {
-                return NotFound();
-            }
-
-            var products = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (products == null)
-            {
-                return NotFound();
-            }
-
-            return View(products);
-        }
-
-        // POST: Products/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            if (_context.Products == null)
-            {
-                return Problem("Entity set 'Context.Products'  is null.");
-            }
-            var products = await _context.Products.FindAsync(id);
-            if (products != null)
-            {
-                _context.Products.Remove(products);
-            }
-
-            // Delete the image file from the server if it exists
-            if (!string.IsNullOrEmpty(products?.ImagePath))
-            {
-                ImageHelper imageHelper = new();
-                imageHelper.DeleteImageFile(products.ImagePath);
-            }
-
+            _context.Products.Add(product);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+        }
+
+        [HttpPut("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductDto productDto)
+        {
+            _logger.LogInformation("Iniciando a atualização do produto com ID {ProductId}", id);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);  // Retornar o estado do modelo para ver o que está errado
+            }
+
+            if (id != productDto.Id)
+            {
+                _logger.LogWarning("Product ID mismatch: esperado {ExpectedId}, recebido {ReceivedId}", id, productDto.Id);
+                return BadRequest("Product ID mismatch.");
+            }
+
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+            {
+                _logger.LogWarning("Produto com ID {ProductId} não encontrado", id);
+                return NotFound();
+            }
+
+            product.Name = productDto.Name;
+            product.Price = productDto.Price;
+            product.Description = productDto.Description;
+            product.Stock = productDto.Stock;
+
+            if (productDto.Image != null)
+            {
+                _logger.LogInformation("Atualizando a imagem do produto com ID {ProductId}", id);
+                var validationResult = ValidateImage(productDto.Image);
+                if (validationResult != null)
+                {
+                    _logger.LogError("Erro de validação da imagem: {ValidationError}", validationResult);
+                    return BadRequest(validationResult);
+                }
+
+                // Excluir imagem antiga se existir
+                if (!string.IsNullOrEmpty(product.ImagePath))
+                {
+                    _logger.LogInformation("Excluindo a imagem antiga do produto com ID {ProductId}", id);
+                    _imageHelper.DeleteImageFile(product.ImagePath);
+                }
+
+                var imagePath = _imageHelper.SaveImageAndGetPath(productDto.Image);
+                product.ImagePath = imagePath;
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Produto com ID {ProductId} atualizado com sucesso", id);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogError(ex, "Erro de concorrência ao atualizar o produto com ID {ProductId}", id);
+                if (!ProductsExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok(product);
+        }
+
+        [HttpDelete("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
 
         private bool ProductsExists(int id)
         {
-            return (_context.Products?.Any(e => e.Id == id)).GetValueOrDefault();
+            return _context.Products.Any(e => e.Id == id);
+        }
+
+        private string ValidateImage(IFormFile image)
+        {
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var extension = Path.GetExtension(image.FileName).ToLower();
+
+            if (!allowedExtensions.Contains(extension))
+            {
+                return "Tipo de arquivo não permitido.";
+            }
+
+            if (image.Length > 5 * 1024 * 1024) // 5 MB
+            {
+                return "O tamanho do arquivo excede o limite permitido.";
+            }
+
+            return null;
         }
     }
 }
+

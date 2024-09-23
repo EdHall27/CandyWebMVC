@@ -1,0 +1,55 @@
+/* Container que organiza os cards */
+.home-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Define o número de colunas */
+    gap: 20px; /* Espaçamento entre os cards */
+    justify-items: center; /* Centraliza os cards horizontalmente */
+    margin: 20px;
+  }
+  
+  /* Estilo para os cards */
+  .product-card {
+    width: 200px; /* Largura fixa para os cards */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    text-align: center;
+    background-color: white;
+  }
+  
+  .product-card img {
+    width: 100%; /* A imagem ocupa toda a largura do card */
+    height: 150px; /* Altura fixa para as imagens */
+    object-fit: cover; /* Mantém a proporção da imagem */
+    border-radius: 4px;
+  }
+  
+  .product-card h3 {
+    font-size: 18px;
+    margin: 10px 0;
+  }
+  
+  .product-card p {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .product-actions {
+    margin-top: 10px;
+  }
+  
+  .product-actions button {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 5px;
+  }
+  
+  .product-actions button:hover {
+    background-color: #555;
+  }
+  

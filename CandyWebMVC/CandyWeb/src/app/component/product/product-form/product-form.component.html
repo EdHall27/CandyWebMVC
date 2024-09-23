@@ -1,0 +1,37 @@
+<h2 *ngIf="isEditMode">Editar Produto</h2>
+<h2 *ngIf="!isEditMode">Criar Produto</h2>
+
+<form (ngSubmit)="onSubmit()">
+  <div>
+    <label for="name">Nome:</label>
+    <input id="name" [(ngModel)]="product.name" name="name" required />
+  </div>
+
+  <div>
+    <label for="price">Preço:</label>
+    <input id="price" type="number" [(ngModel)]="product.price" name="price" required />
+  </div>
+
+  <div>
+    <label for="description">Descrição:</label>
+    <textarea id="description" [(ngModel)]="product.description" name="description"></textarea>
+  </div>
+
+  <div>
+    <label for="stock">Estoque:</label>
+    <input id="stock" type="number" [(ngModel)]="product.stock" name="stock" required />
+  </div>
+
+  <div *ngIf="product.imagePath">
+    <label>Imagem Atual:</label>
+    <img [src]="getImageUrl(product.imagePath)" alt="Imagem do Produto" width="150" />
+  </div>
+
+  <!-- Campo para selecionar a imagem -->
+  <div>
+    <label for="image">Imagem:</label>
+    <input id="image" type="file" (change)="onFileSelected($event)" />
+  </div>
+
+  <button type="submit">{{ isEditMode ? 'Salvar Alterações' : 'Criar Produto' }}</button>
+</form>

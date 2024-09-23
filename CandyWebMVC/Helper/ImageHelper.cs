@@ -4,19 +4,21 @@
     {
         public string SaveImageAndGetPath(IFormFile imageFile)
         {
-            // Implement the logic to save the image to the desired location on the server
-            // For example, you can use the "wwwroot/images" folder
-            // Return the relative path to the image, which will be stored in the database
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
 
-            // Example:
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
-            var imagePath = Path.Combine("wwwroot/uploads", fileName);
-            using (var stream = new FileStream(imagePath, FileMode.Create))
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 imageFile.CopyTo(stream);
             }
 
-            return "/uploads/" + fileName; // Return the relative path
+            return "/uploads/" + fileName; // Caminho relativo para uso no frontend
         }
 
         public void DeleteImageFile(string imagePath)
