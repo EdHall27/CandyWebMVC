@@ -1,0 +1,21 @@
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="container">
+    <div class="logo">
+      <a href="/"
+        ><img src="assets/logo.png" alt="Logo" style="height: 50px"
+      /></a>
+    </div>
+    <ul class="nav-links">
+      <li><a routerLink="/">Home</a></li>
+      <a routerLink="/product" *ngIf="isLoggedIn && isAdmin">Produtos</a>
+      <a routerLink="/profile" *ngIf="isLoggedIn">Meu Perfil</a>
+      <a routerLink="/login" *ngIf="!isLoggedIn">Login</a>
+      <button (click)="logout()" *ngIf="isLoggedIn">Logout</button>
+    </ul>
+    <div class="search-bar">
+      <input type="text" placeholder="Buscar produtos..." />
+      <button type="submit">🔍</button>
+    </div>
+  </div>
+</nav>

@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { switchMap, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
-import { ProductService } from 'D:/Projetos/Projeto CandyWeb/CandyWebMVC/CandyWeb/src/app/services/product.service';
-import { Product } from '../product.model';
+import { ProductService } from '../../../services/product.service';
+import { Product } from '../../../models/product.model';
 import { ImageService } from '../../../services/image.service';
 
 @Component({
   selector: 'app-product-list',
   templateUrl: './product-list.component.html',
-  styleUrls: ['./product-list.component.css'],
+  styleUrls: ['./product-list.component.scss'],
 })
 export class ProductListComponent implements OnInit {
 

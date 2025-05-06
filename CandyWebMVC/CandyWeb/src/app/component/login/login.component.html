@@ -1,0 +1,13 @@
+<form (ngSubmit)="onSubmit()">
+  <label for="cpf">CPFID</label>
+  <input type="number" [(ngModel)]="cpfid" name="cpfid" required />
+
+  <label for="password">Senha</label>
+  <input type="password" [(ngModel)]="password" name="password" required />
+
+  <button type="submit">Entrar</button>
+  <button routerLink="/register">Cadastre-se</button>
+
+
+  <p *ngIf="error" style="color: red">{{ error }}</p>
+</form>

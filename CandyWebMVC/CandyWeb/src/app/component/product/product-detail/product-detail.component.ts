@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ProductService } from 'D:/Projetos/Projeto CandyWeb/CandyWebMVC/CandyWeb/src/app/services/product.service';
-import { Product } from '../product.model';
+import { ProductService } from '../../../services/product.service';
+import { Product } from '../../../models/product.model';
 import { ImageService } from '../../../services/image.service';
 
 
 @Component({
   selector: 'app-product-detail',
   templateUrl: './product-detail.component.html',
-  styleUrl: './product-detail.component.css'
+  styleUrl: './product-detail.component.scss'
 })
 export class ProductDetailComponent implements OnInit {
   product: Product | undefined;  // Inicializa com um Observable vazio

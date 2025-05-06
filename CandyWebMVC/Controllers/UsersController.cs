@@ -8,10 +8,14 @@ using CandyWebMVC.Models.ViewModel;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
+using CandyWebMVC.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CandyWebMVC.Controllers
 {
-    public class UsersController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class UsersController : ControllerBase
     {
         private readonly Context _context;
 
@@ -20,211 +24,70 @@ namespace CandyWebMVC.Controllers
             _context = context;
         }
 
-        private static string HashPassword(string password)
+        [Authorize]
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetProfile()
         {
-            using var sha256 = SHA256.Create();
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            var hash = BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
-            return hash;
-        }
+            var cpfClaim = User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value;
+            if (cpfClaim == null) return Unauthorized();
 
-        // GET: Users
-        public async Task<IActionResult> Index()
-        {
-            var userCpfId = User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value;
+            int cpf = int.Parse(cpfClaim);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.CPFID == cpf);
+            if (user == null) return NotFound();
 
-            if (userCpfId == null)
+            return Ok(new
             {
-                return Redirect("Auth/Login"); // Redireciona para login se o CPFID não estiver disponível
-            }
-            // Mudança aqui para buscar apenas o usuário logado
-            int cpfId = int.Parse(userCpfId);
-            var user = await _context.Users
-                                     .Where(u => u.CPFID == cpfId)
-                                     .ToListAsync();
-
-            return View(user);
-        }
-
-        // GET: Users/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null || _context.Users == null)
-            {
-                return NotFound();
-            }
-
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.CPFID == id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return View(user);
-        }
-
-        // GET: Users/Create
-        public IActionResult Create()
-        {
-            var viewModel = new UserRegistrationViewModel
-            {
-                User = new User(), // Inicializa um novo User
-            };
-
-            return View(viewModel);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(UserRegistrationViewModel viewModel)
-        {
-            if (ModelState.IsValid)
-            {
-
-                // ... (Verificação de CPF existente) ...
-                viewModel.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(viewModel.Password);
-
-                _context.Users.Add(viewModel.User);
-                await _context.SaveChangesAsync();
-
-
-                var loginModel = new LoginModel
+                user.CPFID,
+                user.UserName,
+                user.UserEmail,
+                user.UserPhone,
+                user.IsAdmin,
+                EnderecoPadrao = user.DefaultAddress != null ? new
                 {
-                    CPFID = viewModel.User.CPFID,
-                    PasswordHash = viewModel.User.PasswordHash, // Use o hash já calculado
-                    User = viewModel.User,
-                };
-                _context.loginModels.Add(loginModel);
-                await _context.SaveChangesAsync();
-
-                // Autenticar o usuário aqui
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, viewModel.User.UserName),
-                    new Claim("CPFID", viewModel.User.CPFID.ToString())
-                };
-
-                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
-
-                return RedirectToAction(nameof(Index));
-            }
-            return View(viewModel);
+                    user.DefaultAddress.Street,
+                    user.DefaultAddress.City,
+                    user.DefaultAddress.State,
+                    user.DefaultAddress.CEP
+                } : null
+            });
         }
 
-        // GET: Users/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [Authorize]
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
         {
-            if (id == null || _context.Users == null)
-            {
-                return NotFound();
-            }
+            var cpfClaim = User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value;
+            if (cpfClaim == null) return Unauthorized();
 
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
+            int cpf = int.Parse(cpfClaim);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.CPFID == cpf);
+            if (user == null) return NotFound();
 
-            var editModel = new EditUserViewModel // Suponha que você crie um ViewModel que não inclua a senha
-            {
-                CPFID = user.CPFID,
-                UserName = user.UserName,
-                UserEmail = user.UserEmail,
-                UserPhone = user.UserPhone,
-                IsAdmin = user.IsAdmin
-            };
-
-            return View(editModel);
-        }
-
-        // POST: Users/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, EditUserViewModel editModel)
-        {
-            if (id != editModel.CPFID)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                var user = await _context.Users.FindAsync(id);
-                if (user == null)
-                {
-                    return NotFound();
-                }
-
-                user.UserName = editModel.UserName;
-                user.UserEmail = editModel.UserEmail;
-                user.UserPhone = editModel.UserPhone;
-                user.IsAdmin = editModel.IsAdmin;
-
-                try
-                {
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UserExists(user.CPFID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(editModel);
-        }
-
-        // GET: Users/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || _context.Users == null)
-            {
-                return NotFound();
-            }
-
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.CPFID == id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return View(user);
-        }
-
-        // POST: Users/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            if (_context.Users == null)
-            {
-                return Problem("Entity set 'Context.User'  is null.");
-            }
-            var user = await _context.Users.FindAsync(id);
-            if (user != null)
-            {
-                _context.Users.Remove(user);
-            }
-
+            user.UserEmail = dto.UserEmail;
+            user.UserPhone = dto.UserPhone;
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            return Ok("Perfil atualizado com sucesso.");
         }
 
-        private bool UserExists(int id)
+        [Authorize]
+        [HttpPut("addresses/{id}/default")]
+        public async Task<IActionResult> SetDefaultAddress(int id)
         {
-            return (_context.Users?.Any(e => e.CPFID == id)).GetValueOrDefault();
+            var cpfClaim = User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value;
+            if (cpfClaim == null) return Unauthorized();
+
+            int cpf = int.Parse(cpfClaim);
+            var user = await _context.Users.Include(u => u.UserAddresses).FirstOrDefaultAsync(u => u.CPFID == cpf);
+            if (user == null) return NotFound();
+
+            var address = user.UserAddresses?.FirstOrDefault(a => a.Id == id);
+            if (address == null) return BadRequest("Endereço não encontrado");
+
+            user.DefaultAddressId = id;
+            await _context.SaveChangesAsync();
+
+            return Ok("Endereço padrão atualizado.");
         }
     }
 }

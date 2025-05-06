@@ -1,10 +1,9 @@
 using CandyWebMVC.Data;
 using CandyWebMVC.Helper;
-using CandyWebMVC.Models;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
+using CandyWebMVC.Service;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
+using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,20 +26,26 @@ builder.Services.AddDbContext<Context>(options =>
     options.UseMySql("server=localhost;initial catalog=Product;uid=root;pwd=1234567",
     Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.38-mysql")));
 
-// Adicionando suporte a autenticação com cookies
+builder.Services.AddScoped<ITokenService, TokenService>();
+
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+.AddJwtBearer(options =>
 {
-    options.Cookie.HttpOnly = true;
-    options.ExpireTimeSpan = TimeSpan.FromHours(1);
-    options.LoginPath = "/Auth/Login";
-    options.LogoutPath = "/Auth/Logout";
-    options.SlidingExpiration = true;
+    var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
 });
 
 builder.Services.AddHttpContextAccessor();
@@ -61,6 +66,7 @@ var app = builder.Build();
 // Configure o pipeline de requisição HTTP.
 if (!app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
@@ -71,7 +77,6 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseCors("AllowAngularApp"); // Deve estar após UseRouting e antes de UseAuthentication
-
 app.UseAuthentication();
 app.UseAuthorization();
 

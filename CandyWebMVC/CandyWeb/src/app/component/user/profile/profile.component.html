@@ -1,0 +1,18 @@
+<h2>Perfil do Usuário</h2>
+
+<table *ngIf="user">
+  <tr><td><strong>CPF:</strong></td><td>{{ user.cpfid }}</td></tr>
+  <tr><td><strong>Nome:</strong></td><td>{{ user.userName }}</td></tr>
+  <tr><td><strong>Email:</strong></td><td>{{ user.userEmail }}</td></tr>
+  <tr><td><strong>Telefone:</strong></td><td>{{ user.userPhone }}</td></tr>
+  <tr *ngIf="enderecoPadrao">
+    <td><strong>Endereço padrão:</strong></td>
+    <td>
+      {{ enderecoPadrao.street }}, {{ enderecoPadrao.city }} - {{ enderecoPadrao.state }}<br>
+      CEP: {{ enderecoPadrao.zipCode }}
+    </td>
+  </tr>
+  <tr *ngIf="!enderecoPadrao">
+    <td colspan="2"><em>Nenhum endereço padrão selecionado.</em></td>
+  </tr>
+</table>

@@ -1,0 +1,22 @@
+<h2>Cadastro</h2>
+
+<form (ngSubmit)="onSubmit()">
+  <label>CPFID:</label>
+  <input type="number" [(ngModel)]="cpfid" name="cpfid" required />
+
+  <label>Nome:</label>
+  <input type="text" [(ngModel)]="userName" name="userName" required />
+
+  <label>Email:</label>
+  <input type="email" [(ngModel)]="email" name="email" required />
+
+  <label>Telefone:</label>
+  <input type="text" [(ngModel)]="phone" name="phone" required />
+
+  <label>Senha:</label>
+  <input type="password" [(ngModel)]="password" name="password" required />
+
+  <button type="submit">Cadastrar</button>
+</form>
+
+<p *ngIf="message">{{ message }}</p>

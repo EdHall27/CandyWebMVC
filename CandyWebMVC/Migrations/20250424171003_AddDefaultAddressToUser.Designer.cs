@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CandyWebMVC.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20240916163958_AddProductDto")]
-    partial class AddProductDto
+    [Migration("20250424171003_AddDefaultAddressToUser")]
+    partial class AddDefaultAddressToUser
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -156,11 +156,20 @@ namespace CandyWebMVC.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<int?>("DefaultAddressId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("longtext");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("RefreshTokenExpiry")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("UserEmail")
                         .IsRequired()
@@ -171,10 +180,11 @@ namespace CandyWebMVC.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("UserPhone")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.HasKey("CPFID");
+
+                    b.HasIndex("DefaultAddressId");
 
                     b.ToTable("User");
                 });
@@ -222,6 +232,15 @@ namespace CandyWebMVC.Migrations
                         .HasForeignKey("UserCPFID");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CandyWebMVC.Models.User", b =>
+                {
+                    b.HasOne("CandyWebMVC.Models.Address", "DefaultAddress")
+                        .WithMany()
+                        .HasForeignKey("DefaultAddressId");
+
+                    b.Navigation("DefaultAddress");
                 });
 
             modelBuilder.Entity("CandyWebMVC.Models.Cart", b =>

@@ -10,56 +10,70 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using CandyWebMVC.Models.DTOs;
+using CandyWebMVC.Service;
 
 namespace CandyWebMVC.Controllers
 {
-    [AllowAnonymous]
-    public class AuthController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly Context _context; // DbContext
+        private readonly Context _context;
+        private readonly ITokenService _tokenService;
 
-        public AuthController(IConfiguration configuration, Context context)
+        public AuthController(Context context, ITokenService tokenService)
         {
-            _configuration = configuration;
             _context = context;
+            _tokenService = tokenService;
         }
 
-        [HttpGet]
-        public IActionResult Login(string returnUrl = "/")
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            ViewData["ReturnUrl"] = returnUrl;
-            return View(new LoginViewModel());
-        }
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.CPFID == dto.CPFID);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+                return Unauthorized("CPF ou senha inválidos.");
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = "/")
-        {
-            if (ModelState.IsValid)
+            var accessToken = _tokenService.GenerateAccessToken(user);
+
+            if (string.IsNullOrEmpty(user.RefreshToken) || user.RefreshTokenExpiry < DateTime.UtcNow)
             {
-                var user = await _context.Users.SingleOrDefaultAsync(u => u.CPFID == model.CPFID);
-                if (user != null && BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
-                {
-                    var isAdmin = Convert.ToBoolean(user.IsAdmin);
-                    var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name, user.UserName),
-                        new Claim("CPFID", user.CPFID.ToString()),
-                        new Claim("IsAdmin", user.IsAdmin.ToString())
-                    };
-
-                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
-
-                    return LocalRedirect(returnUrl);
-                }
-                else
-                {
-                    ModelState.AddModelError("", "CPF ou senha inválidos.");
-                }
+                user.RefreshToken = _tokenService.GenerateRefreshToken();
+                user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
             }
-            return View(model);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new AuthResponseDto
+            {
+                AccessToken = accessToken,
+                RefreshToken = user.RefreshToken
+            });
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.RefreshToken))
+                return BadRequest("Refresh token obrigatório.");
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == dto.RefreshToken);
+            if (user == null || user.RefreshTokenExpiry < DateTime.UtcNow)
+                return Unauthorized("Refresh Token inválido.");
+
+            var newAccessToken = _tokenService.GenerateAccessToken(user);
+            var newRefreshToken = _tokenService.GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
+
+            return Ok(new AuthResponseDto
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken
+            });
         }
 
         [HttpPost]
@@ -71,9 +85,39 @@ namespace CandyWebMVC.Controllers
             return RedirectToAction("Login"); //Redireciona para a ação de login após logout
         }
 
-        public IActionResult LoginRequired()
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterUserDto dto)
         {
-            return View("LoginRequired");
+            if (await _context.Users.AnyAsync(u => u.CPFID == dto.CPFID))
+                return BadRequest("Usuário já existe.");
+
+            var user = new User
+            {
+                CPFID = dto.CPFID,
+                UserName = dto.UserName,
+                UserEmail = dto.Email,
+                UserPhone = dto.Phone,
+                IsAdmin = false,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
+            };
+
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            // Gerar tokens
+            var accessToken = _tokenService.GenerateAccessToken(user);
+            var refreshToken = _tokenService.GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
+
+            return Ok(new AuthResponseDto
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            });
         }
     }
 }

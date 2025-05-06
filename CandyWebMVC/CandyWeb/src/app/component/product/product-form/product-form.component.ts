@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ProductService } from 'D:/Projetos/Projeto CandyWeb/CandyWebMVC/CandyWeb/src/app/services/product.service';
-import { Product } from '../product.model';
+import { ProductService } from '../../../services/product.service';
+import { Product } from '../../../models/product.model';
 import { ImageService } from '../../../services/image.service';
 
 @Component({
   selector: 'app-product-form',
   templateUrl: './product-form.component.html',
-  styleUrls: ['./product-form.component.css']  // Correção: 'styleUrls' ao invés de 'styleUrl'
+  styleUrls: ['./product-form.component.scss']  // Correção: 'styleUrls' ao invés de 'styleUrl'
 })
 export class ProductFormComponent implements OnInit {
   product: Product = { id: 0, name: '', description: '', price: 0, stock: 0 };

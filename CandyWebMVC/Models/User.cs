@@ -9,21 +9,27 @@ namespace CandyWebMVC.Models
         [Key]
         public int CPFID { get; set; }
 
-        [Required(ErrorMessage = "{0} required")]
+        [Required]
         public string UserName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "{0} required")]
-        [EmailAddress(ErrorMessage = "Invalid email format")]
+        [Required, EmailAddress]
         public string UserEmail { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "{0} required")]
-        [Phone(ErrorMessage = "Invalid phone number format")]
+        [Phone]
         public string? UserPhone { get; set; }
-
 
         public bool IsAdmin { get; set; }
 
-        public string? PasswordHash { get; set; } // Armazene apenas o hash da senha
+        public string? PasswordHash { get; set; }
+
+        public string? RefreshToken { get; set; }
+
+        public DateTime? RefreshTokenExpiry { get; set; }
+
+        public int? DefaultAddressId { get; set; }
+
+        [ForeignKey("DefaultAddressId")]
+        public Address? DefaultAddress { get; set; }
 
         public virtual ICollection<Address>? UserAddresses { get; set; }
     }

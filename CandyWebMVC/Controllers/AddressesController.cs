@@ -7,10 +7,14 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace CandyWebMVC.Controllers
 {
-    public class AddressesController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AddressesController : ControllerBase
     {
         private readonly Context _context;
 
@@ -19,113 +23,87 @@ namespace CandyWebMVC.Controllers
             _context = context;
         }
 
-        // Listar todos os endereços associados ao CPFID do usuário logado
-        public async Task<IActionResult> Index()
-        {
-            var cpfIdString = User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value;
-            if (!int.TryParse(cpfIdString, out int cpfIdInt))
-            {
-                return View("Error", new ErrorViewModel { RequestId = "CPFID não disponível" });
-            }
-
-            var addresses = await _context.Addresses.Where(a => a.CPFID == cpfIdInt).ToListAsync();
-            return View(addresses);
-        }
-
-        // Criar um novo endereço
-        public IActionResult Create()
-        {
-            var model = new Address();
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Address model)
-        {
-            if (ModelState.IsValid)
-            {
-                // Pega o CPFID do usuário logado
-                var cpfIdString = User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value;
-                if (int.TryParse(cpfIdString, out int cpfId))
-                {
-                    model.CPFID = cpfId; // Atribui o CPFID ao novo endereço
-                    _context.Addresses.Add(model);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction("Index");
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Erro ao identificar usuário.");
-                }
-            }
-            return View(model);
-        }
-
-        // Editar um endereço existente
+        [Authorize]
         [HttpGet]
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> GetUserAddresses()
         {
-            var address = await _context.Addresses.FindAsync(id);
-            if (address == null || address.CPFID != int.Parse(User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value ?? "0"))
-            {
-                return NotFound();
-            }
+            var cpfClaim = User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value;
+            if (!int.TryParse(cpfClaim, out int cpfId)) return Unauthorized();
 
-            var model = new AddressViewModel
-            {
-                NewAddress = address,
-                CPFID = address.CPFID
-            };
+            var addresses = await _context.Addresses
+                .Where(a => a.CPFID == cpfId)
+                .ToListAsync();
 
-            return View(model);
+            return Ok(addresses);
         }
 
+        [Authorize]
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, AddressViewModel viewModel)
+        public async Task<IActionResult> AddAddress([FromBody] Address model)
         {
-            if (id != viewModel.NewAddress.Id || viewModel.CPFID != int.Parse(User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value))
-            {
-                return NotFound();
-            }
+            var cpfClaim = User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value;
+            if (!int.TryParse(cpfClaim, out int cpfId)) return Unauthorized();
 
-            if (ModelState.IsValid)
-            {
-                var address = await _context.Addresses.FindAsync(id);
-                if (address == null)
-                {
-                    return NotFound();
-                }
+            model.CPFID = cpfId;
+            _context.Addresses.Add(model);
+            await _context.SaveChangesAsync();
 
-                // Atualiza propriedades
-                address.Street = viewModel.NewAddress.Street;
-                address.City = viewModel.NewAddress.City;
-                address.State = viewModel.NewAddress.State;
-                address.CEP = viewModel.NewAddress.CEP;
-                
-
-                _context.Update(address);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(viewModel);
+            return Ok("Endereço adicionado com sucesso.");
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
+        [Authorize]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditAddress(int id, [FromBody] Address model)
         {
+            var cpfClaim = User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value;
+            if (!int.TryParse(cpfClaim, out int cpfId)) return Unauthorized();
+
             var address = await _context.Addresses.FindAsync(id);
-            if (address == null)
-            {
-                return NotFound();
-            }
+            if (address == null || address.CPFID != cpfId) return NotFound();
+
+            address.Street = model.Street;
+            address.City = model.City;
+            address.State = model.State;
+            address.CEP = model.CEP;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Endereço atualizado com sucesso.");
+        }
+
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAddress(int id)
+        {
+            var cpfClaim = User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value;
+            if (!int.TryParse(cpfClaim, out int cpfId)) return Unauthorized();
+
+            var address = await _context.Addresses.FindAsync(id);
+            if (address == null || address.CPFID != cpfId) return NotFound();
 
             _context.Addresses.Remove(address);
             await _context.SaveChangesAsync();
 
-            return Json(new { success = true });
+            return Ok("Endereço removido com sucesso.");
+        }
+
+        [Authorize]
+        [HttpPut("{id}/set-default")]
+        public async Task<IActionResult> SetDefaultAddress(int id)
+        {
+            var cpfClaim = User.Claims.FirstOrDefault(c => c.Type == "CPFID")?.Value;
+            if (!int.TryParse(cpfClaim, out int cpfId)) return Unauthorized();
+
+            var user = await _context.Users.Include(u => u.UserAddresses).FirstOrDefaultAsync(u => u.CPFID == cpfId);
+            if (user == null) return NotFound();
+
+            var address = user.UserAddresses?.FirstOrDefault(a => a.Id == id);
+            if (address == null) return BadRequest("Endereço não encontrado");
+
+            user.DefaultAddressId = id;
+            await _context.SaveChangesAsync();
+
+            return Ok("Endereço padrão atualizado.");
         }
     }
 }
