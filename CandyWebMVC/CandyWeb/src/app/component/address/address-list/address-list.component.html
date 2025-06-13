@@ -1,28 +1,47 @@
-<h2>Meus Endereços</h2>
+<!-- src/app/components/address-list/address-list.component.html -->
+<div class="address-management-container">
+  <h2>Meus Endereços</h2>
 
-<table *ngIf="addresses.length > 0; else semEnderecos">
-  <thead>
-    <tr>
-      <th>Rua</th>
-      <th>Cidade</th>
-      <th>Estado</th>
-      <th>CEP</th>
-      <th>Ações</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let addr of addresses">
-      <td>{{ addr.street }}</td>
-      <td>{{ addr.city }}</td>
-      <td>{{ addr.state }}</td>
-      <td>{{ addr.zipCode }}</td>
-      <td>
-        <button (click)="setAsDefault(addr.id)">Definir como padrão</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+  <div class="address-form-section">
+    <h3>{{ selectedAddress ? 'Editar Endereço' : 'Adicionar Novo Endereço' }}</h3>
+    <!-- The address form component -->
+    <app-address-form
+      [addressToEdit]="selectedAddress"
+      (formSubmitted)="onFormSubmitted()"
+    ></app-address-form>
+  </div>
 
-<ng-template #semEnderecos>
-  <p>Nenhum endereço cadastrado.</p>
-</ng-template>
+  <hr class="separator">
+
+  <div class="address-list-section">
+    <h3>Endereços Cadastrados</h3>
+    <table *ngIf="addresses.length > 0; else semEnderecos" class="address-table">
+      <thead>
+        <tr>
+          <th>Rua</th>
+          <th>Cidade</th>
+          <th>Estado</th>
+          <th>CEP</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let addr of addresses">
+          <td>{{ addr.street }}</td>
+          <td>{{ addr.city }}</td>
+          <td>{{ addr.state }}</td>
+          <td>{{ addr.cep }}</td>
+          <td class="actions-column">
+            <button (click)="setAsDefault(addr.id)" class="action-button default-button">Definir como padrão</button>
+            <button (click)="editAddress(addr)" class="action-button edit-button">Editar</button>
+            <button (click)="deleteAddress(addr.id)" class="action-button delete-button">Deletar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ng-template #semEnderecos>
+      <p class="no-addresses-message">Nenhum endereço cadastrado. Utilize o formulário acima para adicionar um.</p>
+    </ng-template>
+  </div>
+</div>

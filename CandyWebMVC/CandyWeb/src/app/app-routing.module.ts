@@ -19,7 +19,7 @@ const routes: Routes = [
   { path: 'create', component: ProductFormComponent, canActivate: [AuthGuard]},
   { path: 'edit/:id', component: ProductFormComponent, canActivate: [AuthGuard]},
   { path: 'profile', component: ProfileComponent },
-  { path: 'enderecos', component: AddressListComponent },
+  { path: 'address', component: AddressListComponent },
   {path : '**', redirectTo: ''},
 ];
 

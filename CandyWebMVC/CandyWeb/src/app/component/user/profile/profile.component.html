@@ -1,18 +1,41 @@
-<h2>Perfil do Usuário</h2>
+<!-- src/app/components/profile/profile.component.html -->
+<div class="profile-container">
+  <h2>Meu Perfil</h2>
 
-<table *ngIf="user">
-  <tr><td><strong>CPF:</strong></td><td>{{ user.cpfid }}</td></tr>
-  <tr><td><strong>Nome:</strong></td><td>{{ user.userName }}</td></tr>
-  <tr><td><strong>Email:</strong></td><td>{{ user.userEmail }}</td></tr>
-  <tr><td><strong>Telefone:</strong></td><td>{{ user.userPhone }}</td></tr>
-  <tr *ngIf="enderecoPadrao">
-    <td><strong>Endereço padrão:</strong></td>
-    <td>
-      {{ enderecoPadrao.street }}, {{ enderecoPadrao.city }} - {{ enderecoPadrao.state }}<br>
-      CEP: {{ enderecoPadrao.zipCode }}
-    </td>
-  </tr>
-  <tr *ngIf="!enderecoPadrao">
-    <td colspan="2"><em>Nenhum endereço padrão selecionado.</em></td>
-  </tr>
-</table>
+  <div *ngIf="user; else loadingOrError" class="user-details">
+    <p><strong>CPF:</strong> {{ user.cpfid }}</p>
+    <p><strong>Nome de Usuário:</strong> {{ user.userName }}</p>
+    <p><strong>Email:</strong> {{ user.userEmail }}</p>
+    <p><strong>Telefone:</strong> {{ user.userPhone }}</p>
+    <p><strong>Administrador:</strong> {{ user.isAdmin ? 'Sim' : 'Não' }}</p>
+
+    <hr class="separator">
+
+    <h3>Endereço Padrão:</h3>
+    <!-- O *ngIf="user.defaultAddress" verifica se o objeto defaultAddress não é nulo -->
+    <div *ngIf="user.defaultAddress; else noDefaultAddress" class="default-address-card">
+      <!-- As propriedades do endereço são acessadas diretamente de 'user.defaultAddress' -->
+      <p><strong>Rua:</strong> {{ user.defaultAddress.street }}</p>
+      <p><strong>Cidade:</strong> {{ user.defaultAddress.city }}</p>
+      <p><strong>Estado:</strong> {{ user.defaultAddress.state }}</p>
+      <p><strong>CEP:</strong> {{ user.defaultAddress.cep }}</p>
+    </div>
+    <ng-template #noDefaultAddress>
+      <p class="info-message">Nenhum endereço padrão definido. Vá para a página de endereços para definir um.</p>
+    </ng-template>
+
+    <hr class="separator">
+
+    <!-- Botão para navegar para a página de endereços -->
+    <div class="button-container">
+      <button (click)="goToAddresses()" class="addresses-button">
+        Gerenciar Endereços
+      </button>
+    </div>
+  </div>
+
+  <ng-template #loadingOrError>
+    <p *ngIf="message" class="error-message">{{ message }}</p>
+    <p *ngIf="!message" class="info-message">Carregando perfil...</p>
+  </ng-template>
+</div>

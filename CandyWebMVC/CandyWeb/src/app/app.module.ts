@@ -19,6 +19,7 @@ import { LoginComponent } from './component/login/login.component';
 import { RegisterComponent } from './component/user/register/register.component';
 import { ProfileComponent } from './component/user/profile/profile.component';
 import { AddressListComponent } from './component/address/address-list/address-list.component';
+import { AddressFormComponent } from './component/address/address-form/address-form.component';
 
 
 @NgModule({
@@ -33,6 +34,7 @@ import { AddressListComponent } from './component/address/address-list/address-l
     RegisterComponent,
     ProfileComponent,
     AddressListComponent,
+    AddressFormComponent,
   ],
   imports: [
     BrowserModule,  // Necessário para qualquer aplicação Angular

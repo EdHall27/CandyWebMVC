@@ -5,10 +5,13 @@ import { Observable } from 'rxjs';
 
 export interface Address {
   id: number;
-  street: string;
+  street: string;     
   city: string;
   state: string;
-  zipCode: string;
+  cep: string;       
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 @Injectable({
@@ -21,6 +24,14 @@ export class AddressService {
 
   getAll(): Observable<Address[]> {
     return this.http.get<Address[]>(this.api);
+  }
+
+  getById(id: number): Observable<Address> {
+    return this.http.get<Address>(`${this.api}/${id}`);
+  }
+
+  getDefault(): Observable<Address | null> {
+    return this.http.get<Address | null>(`${this.api}/default`);
   }
 
   add(address: Omit<Address, 'id'>): Observable<any> {

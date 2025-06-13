@@ -1,0 +1,35 @@
+<!-- src/app/components/address-form/address-form.component.html -->
+<form [formGroup]="addressForm" (ngSubmit)="onSubmit()" class="address-form">
+  <div class="form-group">
+    <label for="street">Rua:</label>
+    <input id="street" type="text" formControlName="street" class="form-control" />
+    <!-- Display error if street is invalid and touched/dirty -->
+    <div *ngIf="addressForm.get('street')?.invalid && (addressForm.get('street')?.dirty || addressForm.get('street')?.touched)" class="error-message">
+      Rua é obrigatória.
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="city">Cidade:</label>
+    <input id="city" type="text" formControlName="city" class="form-control" />
+    <div *ngIf="addressForm.get('city')?.invalid && (addressForm.get('city')?.dirty || addressForm.get('city')?.touched)" class="error-message">
+      Cidade é obrigatória.
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="state">Estado:</label>
+    <input id="state" type="text" formControlName="state" class="form-control" />
+    <div *ngIf="addressForm.get('state')?.invalid && (addressForm.get('state')?.dirty || addressForm.get('state')?.touched)" class="error-message">
+      Estado é obrigatório.
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="CEP">CEP:</label>
+    <input id="CEP" type="text" formControlName="CEP" class="form-control" />
+    <div *ngIf="addressForm.get('CEP')?.invalid && (addressForm.get('CEP')?.dirty || addressForm.get('CEP')?.touched)" class="error-message">
+      CEP é obrigatório.
+    </div>
+  </div>
+  <button type="submit" [disabled]="!addressForm.valid" class="submit-button">
+    {{ addressToEdit ? 'Atualizar Endereço' : 'Adicionar Endereço' }}
+  </button>
+</form>

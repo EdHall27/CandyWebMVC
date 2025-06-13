@@ -36,6 +36,12 @@ namespace CandyWebMVC.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("State")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -43,6 +49,9 @@ namespace CandyWebMVC.Migrations
                     b.Property<string>("Street")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 

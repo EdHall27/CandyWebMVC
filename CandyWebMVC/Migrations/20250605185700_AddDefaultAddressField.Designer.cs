@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CandyWebMVC.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20250424171003_AddDefaultAddressToUser")]
-    partial class AddDefaultAddressToUser
+    [Migration("20250605185700_AddDefaultAddressField")]
+    partial class AddDefaultAddressField
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,6 +39,12 @@ namespace CandyWebMVC.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("State")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -46,6 +52,9 @@ namespace CandyWebMVC.Migrations
                     b.Property<string>("Street")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 

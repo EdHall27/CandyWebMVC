@@ -20,12 +20,19 @@ namespace CandyWebMVC.Models
         public string State { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "{0} required")]
+        [Display(Name = "CEP")] 
         public string CEP { get; set; } = string.Empty;
-
-        // Foreign Key
+        
         public int CPFID { get; set; }
-
-        // Navigation property for EF Core
+      
         public User? User { get; set; }
+
+        [Required]
+        public DateTime CreatedAt { get; set; }
+
+        [Required]
+        public DateTime UpdatedAt { get; set; }
+
+        public bool IsDefault { get; set; } = false;
     }
 }

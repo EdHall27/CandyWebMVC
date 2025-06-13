@@ -1,8 +1,6 @@
-import { Component } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { environment } from '../../../environment/environment';
-import e from 'express';
+import { Address, AddressService } from '../../../services/address.service';
 
 @Component({
   selector: 'app-address-list',
@@ -10,22 +8,52 @@ import e from 'express';
   styleUrl: './address-list.component.css'
 })
 export class AddressListComponent implements OnInit {
-  apiUrl = environment.apiUrl;
-  addresses: any[] = [];
+  addresses: Address[] = []; 
+  selectedAddress: Address | null = null; 
 
-  constructor(private http: HttpClient) {}
+  constructor(private addressService: AddressService) {}
 
   ngOnInit(): void {
-    this.http.get<any[]>(this.apiUrl + '/addresses').subscribe({
-      next: (res) => this.addresses = res,
-      error: () => console.error('Erro ao carregar endereços')
+    this.loadAddresses(); 
+  }
+
+  loadAddresses(): void {
+    this.addressService.getAll().subscribe({
+      next: (res) => {this.addresses = res;
+        console.log('Endereços recebidos do backend:', this.addresses);
+      }, 
+      error: (err) => console.error('Erro ao carregar endereços', err), // Log error
     });
   }
 
-  setAsDefault(id: number) {
-    this.http.put(this.apiUrl + `/addresses/${id}/default`, {}).subscribe({
-      next: () => alert('Endereço definido como padrão!'),
-      error: () => alert('Erro ao definir endereço padrão')
+  setAsDefault(id: number): void {
+    this.addressService.setDefault(id).subscribe({
+      next: () => {
+        alert('Endereço definido como padrão!');
+        this.loadAddresses(); 
+      },
+      error: (err) => alert('Erro ao definir endereço padrão: ' + (err.error || err.message)), 
     });
+  }
+
+  editAddress(address: Address): void {
+    this.selectedAddress = { ...address }; 
+  }
+
+  deleteAddress(id: number): void {
+    if (confirm('Tem certeza que deseja deletar este endereço?')) { // Confirmation dialog
+      this.addressService.delete(id).subscribe({
+        next: () => {
+          alert('Endereço deletado com sucesso!');
+          this.loadAddresses();
+        },
+        error: (err) => alert('Erro ao deletar endereço: ' + (err.error || err.message)), 
+      });
+    }
+  }
+
+  onFormSubmitted(): void {
+    this.selectedAddress = null; 
+    this.loadAddresses(); 
   }
 }
